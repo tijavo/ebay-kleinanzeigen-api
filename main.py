@@ -10,7 +10,7 @@ from routers import (
 )
 from utils.browser import OptimizedPlaywrightManager
 from utils.asyncio_optimizations import EventLoopOptimizer
-
+from fastapi.middleware.cors import CORSMiddleware
 # Global browser manager instance for sharing across all endpoints
 browser_manager = None
 
@@ -42,7 +42,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(version="1.0.0", lifespan=lifespan)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # dein Vite-Dev-Server
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
