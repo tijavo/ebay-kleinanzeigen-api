@@ -11,6 +11,9 @@ from routers import (
 from utils.browser import OptimizedPlaywrightManager
 from utils.asyncio_optimizations import EventLoopOptimizer
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 # Global browser manager instance for sharing across all endpoints
 browser_manager = None
 
@@ -49,18 +52,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Welcome to the Kleinanzeigen API",
-        "endpoints": ["/inserate", "/inserat/{id}", "/inserate-detailed"],
-        "status": "operational",
-    }
-
-
 app.include_router(inserate.router)
 app.include_router(inserat.router)
 app.include_router(inserate_detailed.router)
 app.include_router(inserate_batch.router)
 app.include_router(convert_url.router)
 app.include_router(inserate_by_url.router)
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    file_path = f"public/dist/{full_path}"
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse("public/dist/index.html")
